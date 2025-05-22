@@ -35,13 +35,13 @@ If you want to quit enter Q or q""")
             continue
          
         if operation=="1":
-            pass
+            functions.add_Data()
         elif operation=="2":
             functions.display_Data()
         elif operation=="3":       
-            pass
+            functions.update_Data()
         elif operation=="4":
-            pass
+            functions.delete_Data()
         elif operation=="5":
             pass
         elif operation=="6":
