@@ -1,5 +1,5 @@
 #functions
-
+import csv
 def main():
     pass
 
@@ -7,6 +7,7 @@ def main():
 def display_Data():
 
     with open("annual-co2-emissions-per-country.csv","r") as file:
+        file.readline()
         count=0
         for line in file:
             count+=1
