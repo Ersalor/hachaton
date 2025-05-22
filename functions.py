@@ -1,5 +1,8 @@
 #functions
 import csv
+import math
+import matplotlib.pyplot as plt
+
 def main():
     pass
 ############################################################
@@ -225,5 +228,223 @@ def update_Data():
     add_Data(is_certain=True,adding_country=update_country,adding_code=update_code,adding_year=update_year,adding_carbon=update_carbon)
     print("updated")
 
+
+#########################################################################
+
+def read_emission_data(filename):
+    emission_data = []
+    with open(filename, "r", encoding="utf-8") as f:
+        next(f)
+        for line in f:
+            parts = line.strip().split(",")
+            if len(parts) < 4:
+                continue
+            country = parts[0]
+            try:
+                year = int(parts[2])
+                emission = float(parts[3])
+                emission_data.append((country, year, emission))
+            except ValueError:
+                continue
+    return emission_data
+
+def read_population_data(filename):
+    population_data = []
+    with open(filename, "r", encoding="utf-8") as f:
+        next(f)
+        for line in f:
+            parts = line.strip().split(",")
+            if len(parts) < 3:
+                continue
+            country = parts[0]
+            try:
+                year = int(parts[1])
+                population = int(float(parts[2]))
+                population_data.append((country, year, population))
+            except ValueError:
+                continue
+    return population_data
+
+
+#Analysis Functions
+#1.
+def countries_above_threshold(data, year, threshold):
+    result = []
+    for country, y, emission in data:
+        if y == year and emission > threshold:
+            result.append((country, emission))
+    return result
+
+#2.
+def country_comparison(data, country1, country2, year):
+    e1 = e2 = None
+    for c, y, e in data:
+        if c == country1 and y == year:
+            e1 = e
+        if c == country2 and y == year:
+            e2 = e
+    if e1 is not None and e2 is not None:
+        return abs(e1 - e2)
+    return None
+
+#3.
+def countries_in_range(data, year, min_emission, max_emission):
+    result = []
+    for country, y, e in data:
+        if y == year and min_emission <= e <= max_emission:
+            result.append((country, e))
+    return result
+
+#4.  
+def plot_emission_bar_chart(data):
+    countries = [x[0] for x in data]
+    emissions = [x[1] for x in data]
+    plt.figure(figsize=(10, 5))
+    plt.bar(countries, emissions)
+    plt.xticks(rotation=90)
+    plt.ylabel("CO2 Emisyonu")
+    plt.title("Emisyon Aralığına Göre Ülkeler")
+    plt.tight_layout()
+    plt.show()
+
+
+#5.
+def year_to_year_comparison(data, country, year1, year2):
+    e1 = e2 = None
+    for c, y, e in data:
+        if c == country and y == year1:
+            e1 = e
+        if c == country and y == year2:
+            e2 = e
+    if e1 is not None and e2 is not None:
+        diff = e2 - e1
+        percent = (diff / e1) * 100 if e1 != 0 else None
+        return diff, percent
+    return None
+
+#6.
+def average_emission(data, country, start_year, end_year):
+    emissions = [e for c, y, e in data if c == country and start_year <= y <= end_year]
+    if emissions:
+        return sum(emissions) / len(emissions)
+    return None
+
+#7.
+def emission_intensity(emission_data, population_data, country, year):
+    e = p = None
+    for c, y, val in emission_data:
+        if c == country and y == year:
+            e = val
+            break
+    for c, y, val in population_data:
+        if c == country and y == year:
+            p = val
+            break
+    if e is not None and p and p != 0:
+        return e / p
+    return None
+
+
+#8.
+def trend_last_3_years(data, country):
+    records = [(y, e) for c, y, e in data if c == country]
+    records.sort()
+    if len(records) < 3:
+        return None
+    last3 = records[-3:]
+    e1, e2, e3 = last3[0][1], last3[1][1], last3[2][1]
+    if e1 < e2 < e3:
+        return "Artış"
+    elif e1 > e2 > e3:
+        return "Azalış"
+    else:
+        return "Karışık"
+
+#9.
+def sort_emissions(data, country, start_year, end_year, ascending=True):
+    records = [(y, e) for c, y, e in data if c == country and start_year <= y <= end_year]
+    return sorted(records, key=lambda x: x[1], reverse=not ascending)
+
+#10.
+def biggest_changes(data, year1, year2):
+    emissions = {}
+    for c, y, e in data:
+        if y == year1 or y == year2:
+            if c not in emissions:
+                emissions[c] = {}
+            emissions[c][y] = e
+    changes = []
+    for c, years in emissions.items():
+        if year1 in years and year2 in years:
+            diff = years[year2] - years[year1]
+            changes.append((c, diff))
+    changes.sort(key=lambda x: x[1], reverse=True)
+    return changes[:3], changes[-3:]
+
+#11.report
+def generate_country_report(data, country):
+    records = [(y, e) for c, y, e in data if c == country]
+    if not records:
+        return None
+    records.sort()
+    years = [r[0] for r in records]
+    emissions = [r[1] for r in records]
+    min_all = min(emissions)
+    max_all = max(emissions)
+    last10 = emissions[-10:]
+    min10 = min(last10)
+    max10 = max(last10)
+    avg10 = sum(last10) / len(last10)
+    mean10 = avg10
+    std10 = math.sqrt(sum([(x - mean10) ** 2 for x in last10]) / len(last10))
+    return {
+        "Yıllar": (years[0], years[-1]),
+        "Tüm zaman en düşük": min_all,
+        "Tüm zaman en yüksek": max_all,
+        "Son 10 yıl en düşük": min10,
+        "Son 10 yıl en yüksek": max10,
+        "Son 10 yıl ortalama": avg10,
+        "Son 10 yıl std sapma": std10
+    }
+
+def read_emission_data(filename):
+    emission_data = []
+    with open(filename, "r", encoding="utf-8") as f:
+        next(f)
+        for line in f:
+            parts = line.strip().split(",")
+            if len(parts) < 4:
+                continue
+            country = parts[0]
+            try:
+                year = int(parts[2])
+                emission = float(parts[3])
+                emission_data.append((country, year, emission))
+            except ValueError:
+                continue
+    return emission_data
+
+def read_population_data(filename):
+    population_data = []
+    with open(filename, "r", encoding="utf-8") as f:
+        next(f)
+        for line in f:
+            parts = line.strip().split(",")
+            if len(parts) < 3:
+                continue
+            country = parts[0]
+            try:
+                year = int(parts[1])
+                population = int(float(parts[2]))
+                population_data.append((country, year, population))
+            except ValueError:
+                continue
+    return population_data
+
+
+emission_data = read_emission_data("annual-co2-emissions-per-country.csv")
+population_data = read_population_data("population.csv")
+
+#########################################################################
 if __name__=="__main__":
     main()

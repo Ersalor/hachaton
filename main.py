@@ -2,6 +2,8 @@
 import functions
 
 def main():
+    data = functions.load_emission_data("annual-co2-emissions-per-country.csv")
+    population_data = functions.load_population_data("population.csv")
     print()
     print("---Global CO2 Emissions Data System---\n")
     answer="Y"
@@ -21,7 +23,7 @@ def main():
 10)Emission Intensity
 11)Trend Analysis Over Time
 12)Sorting Emission Data
-13)Highhest İncrease And Decrease in Emissions
+13)Highest İncrease And Decrease in Emissions
 14)Report Generation                                     
 If you want to quit enter Q or q""")
         operation=input("Your answer:")
@@ -43,25 +45,57 @@ If you want to quit enter Q or q""")
         elif operation=="4":
             functions.delete_Data()
         elif operation=="5":
-            pass
+            year = int(input("Yıl: "))
+            threshold = float(input("Eşik değer (ton): "))
+            result = functions.countries_above_threshold(data, year, threshold)
+            for country, emission in result:
+                print(f"{country}: {emission}")
         elif operation=="6":
-            pass
+            year = int(input("Yıl: "))
+            c1 = input("1. Ülke: ")
+            c2 = input("2. Ülke: ")
+            diff = functions.country_comparison(data, year, c1, c2)
+            print(f"{c1} ve {c2} arasındaki fark: {diff}")
         elif operation=="7":
-            pass
+            year = int(input("Yıl: "))
+            min_val = float(input("Alt sınır (ton): "))
+            max_val = float(input("Üst sınır (ton): "))
+            functions.countries_in_range(data, year, min_val, max_val)
         elif operation=="8":
-            pass
+            country = input("Ülke: ")
+            y1 = int(input("1. yıl: "))
+            y2 = int(input("2. yıl: "))
+            diff, percent = functions.year_to_year_comparison(data, country, y1, y2)
+            print(f"Fark: {diff}, Yüzde değişim: %{percent:.2f}")
         elif operation=="9":
-            pass
+            country = input("Ülke: ")
+            start = int(input("Başlangıç yılı: "))
+            end = int(input("Bitiş yılı: "))
+            avg = functions.average_emission(data, country, start, end)
+            print(f"{country} için ortalama emisyon: {avg}")
         elif operation=="10":
-            pass
+            country = input("Ülke: ")
+            year = int(input("Yıl: "))
+            intensity = functions.emission_intensity(data, population_data, country, year)
+            print(f"{country} ({year}) kişi başı emisyon: {intensity}")
         elif operation=="11":
-            pass
+            country = input("Ülke: ")
+            trend = functions.trend_last_3_years(data, country)
+            print(f"Trend (son 3 yıl): {trend}")
         elif operation=="12":
-            pass
+            country = input("Ülke: ")
+            start = int(input("Başlangıç yılı: "))
+            end = int(input("Bitiş yılı: "))
+            order = input("Sıralama (asc/desc): ")
+            functions.sort_emissions(data, country, start, end, order)
         elif operation=="13":
-            pass
+            inc, dec = functions.biggest_changes(data)
+            print(f"En büyük artış: {inc}")
+            print(f"En büyük azalış: {dec}")
+
         elif operation=="14":
-            pass
+            country = input("Ülke: ")
+            functions.generate_country_report(data, country)
         elif operation.upper()=="Q":
             print("The program has been terminated")
             break
