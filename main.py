@@ -37,7 +37,7 @@ If you want to quit enter Q or q""")
         if operation=="1":
             pass
         elif operation=="2":
-            pass
+            functions.display_Data()
         elif operation=="3":       
             pass
         elif operation=="4":
