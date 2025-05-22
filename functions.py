@@ -122,14 +122,14 @@ def display_Data():
         pass
 
 
-def add_Data(*,is_certain=False,adding_country,adding_code,adding_year,adding_carbon):
+def add_Data(*,is_certain=False,adding_country=None,adding_code=None,adding_year=None,adding_carbon=None):
     while True:
         exist = False
         if is_certain == False:         
             add_country = input("Enter the country : ").strip().capitalize()
             add_code = input("Enter the code : ").strip().upper()
-            add_year = input("Enter the year : ")
-            add_carbon = input("Enter the carbon : ")
+            add_year = input("Enter the year : ").strip()
+            add_carbon = input("Enter the carbon : ").strip()
 
         else:
             add_country = adding_country
@@ -144,7 +144,9 @@ def add_Data(*,is_certain=False,adding_country,adding_code,adding_year,adding_ca
             count=0
             for line in file:
                 count+=1
-                parts=line.strip().split(",") #parts[0]=> country name  parts[1]=>country code  parts[2]=>year  parts[3]=>emission
+                parts=line.strip().split(",")#parts[0]=> country name  parts[1]=>country code  parts[2]=>year  parts[3]=>emission
+                if len(parts) < 4:
+                    continue 
                 country=parts[0]
                 year=parts[2]
                 emission=parts[3]
@@ -159,14 +161,18 @@ def add_Data(*,is_certain=False,adding_country,adding_code,adding_year,adding_ca
                     exist = True
                     break
 
-            if exist == False:
-                solution = add_country + "," + add_code + "," + add_year + "," + add_carbon
-                with open("annual-co2-emissions-per-country.csv","a") as adding:
-                    adding.write("\n" + solution)
+        if exist == False:
+            solution = add_country.capitalize() + "," + add_code.upper() + "," + add_year + "," + add_carbon
+            with open("annual-co2-emissions-per-country.csv","a") as adding:
+                adding.write("\n" + solution)
+            
+            if is_certain == False:
                 print("Added")
+            break
 
 
-def delete_Data(*,is_certain=False,deleting_country,deleting_year):
+
+def delete_Data(*,is_certain=False,deleting_country=None,deleting_year=None):
 
     while True:
 
@@ -174,39 +180,44 @@ def delete_Data(*,is_certain=False,deleting_country,deleting_year):
             rows = file.readlines()
 
         if is_certain == False:  
-            delete_country = input("Enter the country : ").strip().capitalize()
-            delete_year = input("Enter the year : ")
+            delete_country = input("Enter the country : ").strip()
+            delete_year = input("Enter the year : ").strip()
 
         else:
             delete_country = deleting_country
             delete_year = deleting_year
 
-        solution = delete_country + " " + delete_year
+        solution = delete_country.capitalize() + " " + delete_year
         found = False
         new_rows = []
 
         with open("annual-co2-emissions-per-country.csv","r") as file:
-            file.readline()
             count=0
             for line in file:
                 count+=1
                 parts=line.strip().split(",") #parts[0]=> country name  parts[1]=>country code  parts[2]=>year  parts[3]=>emission
+                if len(parts) < 4:
+                    continue
                 country=parts[0]
                 year=parts[2]
                 control = country + " " + year 
                 if solution == control :
-                    print("silindi")
+                    if is_certain == False:
+                        print("deleted")
                     found = True
                     continue
                 else:
                     new_rows.append(line)
 
-            if found != False:
-                with open("annual-co2-emissions-per-country.csv","w") as writer:
-                    writer.writelines(new_rows)
+        if found != False:
+            with open("annual-co2-emissions-per-country.csv","w") as writer:
+                writer.writelines(new_rows)
+            break
+        else:
+            print("not found")
+            if is_certain == True:
                 break
-            else:
-               print("not found")
+
 
 
 def update_Data():
@@ -215,7 +226,7 @@ def update_Data():
         with open("annual-co2-emissions-per-country.csv","r") as reader:
             rows = reader.readlines()
         update_country = input("Enter the country : ").strip().capitalize()
-        update_code = input("Enter the code : ")
+        update_code = input("Enter the code : ").strip()
         update_year = input("Enter the year : ")
         update_carbon = input("Enter the new CO2 : ")
         delete_Data(is_certain=True,deleting_country=update_country,deleting_year=update_year)
@@ -368,6 +379,7 @@ def sort_emissions(data, country, start_year, end_year, ascending=True):
 #10.
 def biggest_changes(data, year1, year2):
     emissions = {}
+
     for c, y, e in data:
         if y == year1 or y == year2:
             if c not in emissions:
@@ -397,15 +409,15 @@ def generate_country_report(data, country):
     avg10 = sum(last10) / len(last10)
     mean10 = avg10
     std10 = math.sqrt(sum([(x - mean10) ** 2 for x in last10]) / len(last10))
-    return {
-        "Yıllar": (years[0], years[-1]),
-        "Tüm zaman en düşük": min_all,
-        "Tüm zaman en yüksek": max_all,
-        "Son 10 yıl en düşük": min10,
-        "Son 10 yıl en yüksek": max10,
-        "Son 10 yıl ortalama": avg10,
-        "Son 10 yıl std sapma": std10
-    }
+    
+    print(f"Yıllar: {years[0], years[-1]}")
+    print(f"Tüm zaman en düşük: {min_all}")
+    print(f"Tüm zaman en yüksek: {max_all}")
+    print(f"Son 10 yıl en düşük: {min10}")
+    print(f"Son 10 yıl en yüksek:{max10}")
+    print(f"Son 10 yıl ortalama: {avg10}")
+    print(f"Son 10 yıl std sapma: {std10}")
+    
 
 def read_emission_data(filename):
     emission_data = []
